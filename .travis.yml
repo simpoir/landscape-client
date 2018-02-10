@@ -1,32 +1,25 @@
 dist: trusty
 sudo: true
 language: python
-python:
-  - "3.4"
-  - "3.5"
-  - "3.6"
 matrix:
   include:
-    - python: 2.7
-      env: TARGET=check2
-    - python: 3.6
-      env: TARGET=lint
-    - python: 3.4
-      env:
-          TARGET=coverage
-      before_script:
-        - python3 -m pip install -U coverage
-        - python3 -m pip install -U codecov
-      script:
-        - make $TARGET
-      after_success:
-        - codecov
+    - env: TARGET=check2 IMAGE=ubuntu:xenial
+    #- env: TARGET=check3 IMAGE=ubuntu-daily:bionic
+    #- python: 3.6
+    #  env: TARGET=lint
+    #- python: 3.4
+    #  env: TARGET=coverage
+    #  before_script:
+    #    - python3 -m pip install -U coverage
+    #    - python3 -m pip install -U codecov
+    #  script:
+    #    - make $TARGET
+    #  after_success:
+    #    - codecov
 # XXX cache the installs?
 env:
   global:
     - TRIAL_ARGS=-j4
-  matrix:
-    - TARGET=check3
 install:
   - pip install flake8
   # These match "make depends"
@@ -35,4 +28,15 @@ install:
   # build & install python-apt
   - make -f Makefile.travis pipinstallpythonapt
 script:
-  - make $TARGET PYTHON=python$TRAVIS_PYTHON_VERSION
+   - if [ ! -z ${IMAGE} ]; then
+      sudo apt-get -y -t trusty-backports install lxd;
+      sudo lxd init --auto;
+      sudo usermod -a -G lxd travis;
+   fi
+  - if [ ! -z ${IMAGE} ]; then
+      sudo su travis -c 'lxc launch ${IMAGE} testcontainer';
+      sudo su travis -c 'lxc config device add testcontainer disk path=/target source='$(pwd);
+      sudo su travis -c 'lxc exec testcontainer -- sh -c "cd /target; make ${TARGET}"';
+    else
+      make $TARGET PYTHON=python$TRAVIS_PYTHON_VERSION'
+    fi
