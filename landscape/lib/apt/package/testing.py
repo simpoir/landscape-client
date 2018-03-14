@@ -1,4 +1,5 @@
 import base64
+import gc
 import os
 import textwrap
 import time
@@ -29,6 +30,12 @@ class AptFacadeHelper(object):
         test_case._add_package_to_deb_dir = self._add_package_to_deb_dir
         test_case._touch_packages_file = self._touch_packages_file
         test_case._hash_packages_by_name = self._hash_packages_by_name
+
+    def tear_down(self, test_case):
+        # Not strictly required, but running gc between tests using apt avoids
+        # confusing apt crashes (i.e. "Failed to fork") when running with less
+        # than 2GB memory.
+        gc.collect()
 
     def _add_package(self, packages_file, name, architecture="all",
                      version="1.0", description="description",
