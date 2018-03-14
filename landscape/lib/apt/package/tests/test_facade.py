@@ -1294,8 +1294,11 @@ class AptFacadeTest(testing.HelperTestCase, testing.FSTestCase,
         progress.old_excepthook = (
             lambda exc_type, exc_value, exc_tb: hook_calls.append(
                 (exc_type, exc_value, exc_tb)))
-        progress._prevent_dpkg_apport_error(
-            SystemError, SystemError("error"), object())
+        with mock.patch("sys.__excepthook__") as mock_excepthook:
+            progress._prevent_dpkg_apport_error(
+                SystemError, SystemError("error"), object())
+            mock_excepthook.assert_called_once_with(
+                SystemError, mock.ANY, mock.ANY)
         self.assertEqual([], hook_calls)
 
     def test_prevent_dpkg_apport_error_system_error_calls_system_hook(self):

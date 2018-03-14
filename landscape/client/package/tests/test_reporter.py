@@ -1909,12 +1909,12 @@ class PackageReporterAptTest(LandscapeTest):
     def test_is_release_upgrader_running(self):
         """
         The L{PackageReporter._is_release_upgrader_running} method should
-        return True if the simle heuristics detects a release upgrader
+        return True if the simple heuristics detects a release upgrader
         running concurrently.
         """
         # no 'release upgrader running'
         self.assertFalse(self.reporter._is_release_upgrader_running())
-        # fake 'release ugrader' running with non-root UID
+        # fake 'release upgrader' running with non-root UID
         p = subprocess.Popen([reporter.PYTHON_BIN, '-c',
                               'import time; time.sleep(10)',
                               reporter.RELEASE_UPGRADER_PATTERN + "12345"])

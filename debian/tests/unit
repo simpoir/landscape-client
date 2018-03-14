@@ -1,0 +1,4 @@
+#!/bin/sh
+export LC_ALL=C
+export PYTHONPATH="${PYTHONPATH}:${0%/*}/../../"
+eval trial3 "landscape"
